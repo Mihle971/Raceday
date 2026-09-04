@@ -1,1 +1,49 @@
+name: Validate PoE Repository Structure
 
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  validate-docs:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Check /docs folder exists
+        run: |
+          if [ ! -d "docs" ]; then
+            echo "ERROR: /docs folder is missing."
+            exit 1
+          fi
+          echo "/docs folder found."
+
+      - name: Check for ERD file (PNG or PDF)
+        run: |
+          if ! ls docs/ 2>/dev/null | grep -iE 'erd.*\.(png|pdf)$' > /dev/null; then
+            echo "ERROR: No ERD file found in /docs (expected a filename containing 'ERD' ending in .png or .pdf)."
+            exit 1
+          fi
+          echo "ERD file found."
+
+      - name: Check for planning document (Word/PDF export)
+        run: |
+          if ! ls docs/*.pdf 2>/dev/null > /dev/null; then
+            echo "ERROR: No PDF planning document found in /docs."
+            exit 1
+          fi
+          echo "Planning PDF found."
+
+      - name: Check for SQL script
+        run: |
+          if ! ls docs/*.sql 2>/dev/null > /dev/null; then
+            echo "ERROR: No .sql file found in /docs."
+            exit 1
+          fi
+          echo "SQL script found."
+
+      - name: All checks passed
+        run: echo "All required Part 1 files are present in /docs."
